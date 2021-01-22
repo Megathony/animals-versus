@@ -1,14 +1,35 @@
-<html>
+<!DOCTYPE html>
+<html lang="fr">
   <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script>
       console.log("dans le navigateur")
+      let firstNumb = 0;
+      let secondNumb = 0;
       const socket = new WebSocket(`ws://${window.location.hostname}:${window.location.port}`);
 
       socket.addEventListener("message", async function (event) {
         
         try {
           const data = await event.data.text()
-          console.log("message from server: ", data)
+          const value = JSON.parse(data)
+          document.getElementById("loading").classList.remove('loading');
+          document.getElementById('loading').classList.add("notLoading")
+          if (value.matching_rules[0].tag == "first") {
+            firstNumb++;
+            document.getElementById('firstValue').innerHTML = firstNumb;
+            var img = document.createElement('img'); 
+            img.class = 'userPicture';
+            img.src = value.includes.users[0].profile_image_url;
+            document.getElementById('tabFirst').appendChild(img);
+          } else if (value.matching_rules[0].tag == "second") {
+            secondNumb++;
+            document.getElementById('secondValue').innerHTML = secondNumb;
+            var img = document.createElement('img');  
+            img.class = 'userPicture';
+            img.src = value.includes.users[0].profile_image_url; 
+            document.getElementById('tabSecond').appendChild(img); 
+          }
         } catch(err) {
 
         }
@@ -17,13 +38,80 @@
 
       socket.addEventListener('open', function (event) {
         console.log("connected", event);
-        
-        socket.send("Hello from client")
       });
 
+      // envoyer les nouvelles data au socket
+      function send() {
+        firstNumb = 0;
+        secondNumb = 0;
+        document.getElementById("loading").classList.add('loading');
+        document.getElementById('loading').classList.remove("notLoading")
+        const newData = [document.getElementById('lang').value,document.getElementById('first').value,document.getElementById('second').value]
+        socket.send(newData)
+      }
+
     </script>
+    <style>
+      .tabFirst{
+        background-color: green;
+        width: 50%;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .tabSecond{
+        background-color: blue;
+        width: 50%;
+        display:flex;
+        flex-wrap: wrap;
+      }
+      img{
+        width: 4%;
+        height: 24px;
+        margin: 0.5%;
+      }
+      .tab{
+        display: flex;
+      }
+      .notLoading{
+        position:absolute;
+        opacity: 0%;
+        transition-duration: 0.7s;
+      }
+      .loading{
+        position:absolute;
+        margin-top: 50vh;
+        margin-left:50%;
+        padding: 50px;
+        transform: translateY(-50%) translateX(-50%);
+        background-color: pink;
+        border-radius: 50%;
+        color: black;
+        font-size: 20px;
+        text-align:center;
+        vertical-align: sub;
+        opacity: 100%;
+        transition-duration: 0.7s;
+      }
+    </style>
   </head>
   <body>
-    <h1>Yay</h1>
+    <h1>Let Fight with Twitter</h1>
+    <div class="notLoading" id="loading">Loading</div>
+    <select name="language" id="lang" value="en">
+      <option value="fr">Français</option>
+      <option value="en" selected="selected">Anglais</option>
+      <option value="de">Allemands</option>
+      <option value="ja">Japonais</option>
+    </select>
+    <input type="text" id="first" value="cat">
+    versus
+    <input type="text" id="second" value="dog">
+    <button onclick="send()">MATCH!</button>
+    <p id="firstValue">0</p>
+    <p id="secondValue">0</p>
+    <div class="tab">
+      <div class="tabFirst" id="tabFirst"></div>
+      <div class="tabSecond" id="tabSecond"></div>
+    </div>
   </body>
 </html>
