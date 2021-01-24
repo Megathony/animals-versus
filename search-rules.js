@@ -33,7 +33,8 @@ async function addSearchRules(rules) {
 
   const response = await needle('post', TWT_API_URL, data, options)
 
-  return response.body
+  console.log(response.body.data)
+  return response.body.data
 }
 
 module.exports = {

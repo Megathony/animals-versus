@@ -3,21 +3,26 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script>
-      console.log("dans le navigateur")
       let firstNumb = 0;
       let secondNumb = 0;
+      let sec = 0;
+      let isLoading = false;
+      let isCounting = false;
       let first = '';
       let second = '';
       const socket = new WebSocket(`ws://${window.location.hostname}:${window.location.port}`);
       socket.addEventListener("message", async function (event) {
+        if (isCounting == false) {
+          writeSpeed()
+        }
         
         try {
           const data = await event.data.text()
           const value = JSON.parse(data)
-          console.log(value)
           if (value.matching_rules[0].tag == first) {
             document.getElementById("loading").classList.remove('loading');
             document.getElementById('loading').classList.add("notLoading")
+            isLoading = false;
             firstNumb++;
             var img = document.createElement('img'); 
             img.class = 'userPicture';
@@ -26,6 +31,7 @@
           } else if (value.matching_rules[0].tag == second) {
             document.getElementById("loading").classList.remove('loading');
             document.getElementById('loading').classList.add("notLoading")
+            isLoading = false;
             secondNumb++;
             var img = document.createElement('img');  
             img.class = 'userPicture';
@@ -38,22 +44,21 @@
         
       })
 
-      socket.addEventListener('open', function (event) {
-        console.log("connected", event);
-      });
-
       function writeSpeed() {
-        document.getElementById('secondValue').innerHTML = second + " : " + secondNumb + " tweets/s";
-        secondNumb = 0;
-        document.getElementById('firstValue').innerHTML = first + " : " + firstNumb + " tweets/s";
-        firstNumb = 0;
-        console.log("test")
-        setTimeout(() => { writeSpeed(); }, 1000)
+        document.getElementById('secondValue').innerHTML = second + " : " + secondNumb/sec + " tweets/s";
+        document.getElementById('firstValue').innerHTML = first + " : " + firstNumb/sec + " tweets/s";
+        if( isLoading == false ) {
+          isCounting = true;
+          setTimeout(() => { writeSpeed(); }, 1000)
+          sec++;
+        } else {
+          isCounting = false;
+        }
       }
 
       // envoyer les nouvelles data au socket
       function send() {
-        writeSpeed()
+        isLoading = true;
         firstNumb = 0;
         secondNumb = 0;
         document.getElementById("loading").classList.add('loading');

@@ -12,13 +12,15 @@ server.listen(3000)
 const wsServer = new WebSocket.Server({ server })
 const clientRules = {}
 
+// Au moment de la connection d'un nouveau client
 wsServer.on("connection", (client) => {
   console.log("new connection: ")
   const clientId = nanoid()
 
+  // Au moment de la réception d'un message du client
   client.on("message", (message) => {
     if(clientRules[clientId] != undefined) {
-      console.log('test')
+      deleteRules(clientRules[clientId])
     }
     rule = message.split(",");
     if(rule.length = 3){
@@ -29,8 +31,11 @@ wsServer.on("connection", (client) => {
     }
   })
 
+  // quand le client se déconnecte.
   client.on('close', () => {
-    deleteRules(clientRules[clientId])
+    if(clientRules[clientId] != undefined) {
+      deleteRules(clientRules[clientId])
+    }
   });
 
   // envoyer des données au client via websocket
@@ -49,6 +54,7 @@ wsServer.on("connection", (client) => {
       }
     }
   )
+  resetRules()
   // connexion API Twitter
   connectToTwitter()
 })
@@ -76,6 +82,7 @@ async function resetRules() {
   // récupérer les filtres existants
   const existingRules = await getSearchRules()
   const ids = existingRules?.data?.map(rule => rule.id)
+  console.log(existingRules.data)
   
   //supprimer tous les filtres
   if (ids) {
