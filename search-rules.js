@@ -8,12 +8,14 @@ const options = {
   }
 }
 
+// Récupération des filtres existant
 async function getSearchRules() {
   const response = await needle('get', TWT_API_URL, options )
 
   return response.body
 }
 
+// Suprime un filtre existant
 async function deleteSearchRules(ids) {
   const data = {
     delete: {
@@ -26,6 +28,7 @@ async function deleteSearchRules(ids) {
   console.log("delete rules: ", response.body)
 }
 
+// Ajoute un filtre
 async function addSearchRules(rules) {
   const data = {
     add: rules

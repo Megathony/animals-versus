@@ -1,5 +1,6 @@
 const { Writable, Readable, pipeline, Transform } = require("stream")
 
+// Transformations des données reçu en JSON
 const jsonParser = new Transform({
   readableObjectMode: true,
 

@@ -21,6 +21,7 @@ wsServer.on("connection", (client) => {
   client.on("message", (message) => {
     if(clientRules[clientId] != undefined) {
       deleteRules(clientRules[clientId])
+      clientRules[clientId] = undefined
     }
     rule = message.split(",");
     if(rule.length = 3){
@@ -54,7 +55,6 @@ wsServer.on("connection", (client) => {
       }
     }
   )
-  resetRules()
   // connexion API Twitter
   connectToTwitter()
 })
@@ -82,7 +82,6 @@ async function resetRules() {
   // récupérer les filtres existants
   const existingRules = await getSearchRules()
   const ids = existingRules?.data?.map(rule => rule.id)
-  console.log(existingRules.data)
   
   //supprimer tous les filtres
   if (ids) {
