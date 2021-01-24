@@ -28,7 +28,7 @@ function connectToTwitter() {
 
   const req = http.request(opts, (res) => {
     res.on('data', (chunk) => {
-      tweetStream.push(chunk)
+      tweetStream.push(chunk, 'test')
     })
   })
   

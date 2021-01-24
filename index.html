@@ -6,25 +6,27 @@
       console.log("dans le navigateur")
       let firstNumb = 0;
       let secondNumb = 0;
+      let first = '';
+      let second = '';
       const socket = new WebSocket(`ws://${window.location.hostname}:${window.location.port}`);
-
       socket.addEventListener("message", async function (event) {
         
         try {
           const data = await event.data.text()
           const value = JSON.parse(data)
-          document.getElementById("loading").classList.remove('loading');
-          document.getElementById('loading').classList.add("notLoading")
-          if (value.matching_rules[0].tag == "first") {
+          console.log(value)
+          if (value.matching_rules[0].tag == first) {
+            document.getElementById("loading").classList.remove('loading');
+            document.getElementById('loading').classList.add("notLoading")
             firstNumb++;
-            document.getElementById('firstValue').innerHTML = firstNumb;
             var img = document.createElement('img'); 
             img.class = 'userPicture';
             img.src = value.includes.users[0].profile_image_url;
             document.getElementById('tabFirst').appendChild(img);
-          } else if (value.matching_rules[0].tag == "second") {
+          } else if (value.matching_rules[0].tag == second) {
+            document.getElementById("loading").classList.remove('loading');
+            document.getElementById('loading').classList.add("notLoading")
             secondNumb++;
-            document.getElementById('secondValue').innerHTML = secondNumb;
             var img = document.createElement('img');  
             img.class = 'userPicture';
             img.src = value.includes.users[0].profile_image_url; 
@@ -40,13 +42,26 @@
         console.log("connected", event);
       });
 
+      function writeSpeed() {
+        document.getElementById('secondValue').innerHTML = second + " : " + secondNumb + " tweets/s";
+        secondNumb = 0;
+        document.getElementById('firstValue').innerHTML = first + " : " + firstNumb + " tweets/s";
+        firstNumb = 0;
+        console.log("test")
+        setTimeout(() => { writeSpeed(); }, 1000)
+      }
+
       // envoyer les nouvelles data au socket
       function send() {
+        writeSpeed()
         firstNumb = 0;
         secondNumb = 0;
         document.getElementById("loading").classList.add('loading');
-        document.getElementById('loading').classList.remove("notLoading")
-        const newData = [document.getElementById('lang').value,document.getElementById('first').value,document.getElementById('second').value]
+        document.getElementById('loading').classList.remove("notLoading");
+        let lang = document.getElementById('lang').value;
+        first = document.getElementById('first').value;
+        second = document.getElementById('second').value;
+        const newData = [lang, first, second]
         socket.send(newData)
       }
 

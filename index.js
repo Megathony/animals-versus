@@ -1,6 +1,7 @@
 require("dotenv").config()
 const { pipeline, Writable } = require("stream")
 const WebSocket = require("ws")
+const { nanoid } = require('nanoid')
 const server = require("./server")
 const {setSearchRules, connectToTwitter, tweetStream} = require("./twitter")
 const {getSearchRules, deleteSearchRules, addSearchRules} = require("./search-rules")
@@ -9,20 +10,28 @@ const {jsonParser, logger, textExtractor, tweetCounter} = require("./process-twe
 // server http
 server.listen(3000)
 const wsServer = new WebSocket.Server({ server })
+const clientRules = {}
 
 wsServer.on("connection", (client) => {
   console.log("new connection: ")
+  const clientId = nanoid()
 
   client.on("message", (message) => {
-    console.log("message from client: ", message);
-
+    if(clientRules[clientId] != undefined) {
+      console.log('test')
+    }
     rule = message.split(",");
     if(rule.length = 3){
-      const rules = addRules(rule);
+      const rulesId = addRules(rule);
+      clientRules[clientId] = rulesId;
     } else {
       console.log('oups')
     }
   })
+
+  client.on('close', () => {
+    deleteRules(clientRules[clientId])
+  });
 
   // envoyer des données au client via websocket
   const socketStream = WebSocket.createWebSocketStream(client);
@@ -40,6 +49,8 @@ wsServer.on("connection", (client) => {
       }
     }
   )
+  // connexion API Twitter
+  connectToTwitter()
 })
 
 async function addRules(rules) {
@@ -48,9 +59,16 @@ async function addRules(rules) {
   const valueFirst = rules[1]
   const valueSecond = rules[2]
   return addSearchRules([
-    { value: lang + " " + valueFirst, tag: "first" },
-    { value: lang + " " + valueSecond, tag: "second" }
+    { value: lang + " " + valueFirst, tag: valueFirst },
+    { value: lang + " " + valueSecond, tag: valueSecond }
   ])
+}
+
+async function deleteRules(ids){
+  //supprimer les filtres
+  if (ids) {
+    await  deleteSearchRules(ids)
+  }
 }
 
 // remplace les filtres existant par les nouveaux
@@ -63,9 +81,4 @@ async function resetRules() {
   if (ids) {
     await  deleteSearchRules(ids)
   }
-
-  // connexion API Twitter
-  connectToTwitter()
 }
-
-resetRules()
